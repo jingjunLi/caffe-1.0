@@ -517,11 +517,17 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
   CHECK_GE(start, 0);
   CHECK_LT(end, layers_.size());
   Dtype loss = 0;
+  Timer layer_timer;
+  //Timer layer_timer[end - start]
   for (int i = start; i <= end; ++i) {
     for (int c = 0; c < before_forward_.size(); ++c) {
       before_forward_[c]->run(i);
     }
+    //layer_timer.Start();
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
+    //LOG_IF(INFO, Caffe::root_solver())
+    //    << "Layer " << layer_names_[i]
+    //    << ", time " << layer_timer.Seconds();
     loss += layer_loss;
     if (debug_info_) { ForwardDebugInfo(i); }
     for (int c = 0; c < after_forward_.size(); ++c) {

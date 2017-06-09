@@ -8,6 +8,7 @@
 #include "caffe/proto/caffe.pb.h"
 
 #include "caffe/layers/base_conv_layer.hpp"
+#include <cuda_profiler_api.h>
 
 namespace caffe {
 
