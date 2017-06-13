@@ -14,6 +14,7 @@ namespace bp = boost::python;
 #include "boost/algorithm/string.hpp"
 #include "caffe/caffe.hpp"
 #include "caffe/util/signal_handler.h"
+#include <cuda_profiler_api.h>
 
 using caffe::Blob;
 using caffe::Caffe;
@@ -246,6 +247,7 @@ int train() {
   }
 
   LOG(INFO) << "Starting Optimization";
+  cudaProfilerStart();
   if (gpus.size() > 1) {
 #ifdef USE_NCCL
     caffe::NCCL<float> nccl(solver);
@@ -257,6 +259,7 @@ int train() {
     solver->Solve();
   }
   LOG(INFO) << "Optimization Done.";
+  cudaProfilerStop();
   return 0;
 }
 RegisterBrewFunction(train);
