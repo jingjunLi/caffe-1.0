@@ -247,7 +247,7 @@ int train() {
   }
 
   LOG(INFO) << "Starting Optimization";
-  cudaProfilerStart();
+  //cudaProfilerStart();
   if (gpus.size() > 1) {
 #ifdef USE_NCCL
     caffe::NCCL<float> nccl(solver);
@@ -259,7 +259,7 @@ int train() {
     solver->Solve();
   }
   LOG(INFO) << "Optimization Done.";
-  cudaProfilerStop();
+  //cudaProfilerStop();
   return 0;
 }
 RegisterBrewFunction(train);
@@ -431,6 +431,7 @@ RegisterBrewFunction(time);
 
 int main(int argc, char** argv) {
   // Print output to stderr (while still logging).
+  cudaProfilerStart();
   FLAGS_alsologtostderr = 1;
   // Set version
   gflags::SetVersionString(AS_STRING(CAFFE_VERSION));
@@ -458,4 +459,5 @@ int main(int argc, char** argv) {
   } else {
     gflags::ShowUsageWithFlagsRestrict(argv[0], "tools/caffe");
   }
+  cudaProfilerStop();
 }
