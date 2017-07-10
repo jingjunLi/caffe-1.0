@@ -524,8 +524,8 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
       before_forward_[c]->run(i);
     }
     //layer_timer.Start();
-    LOG_IF(INFO, Caffe::root_solver())
-        << "Layer " << layer_names_[i];
+    //LOG_IF(INFO, Caffe::root_solver())
+      //  << "Layer " << layer_names_[i];
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     //    << ", time " << layer_timer.Seconds();
     loss += layer_loss;
