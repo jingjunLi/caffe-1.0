@@ -431,7 +431,7 @@ RegisterBrewFunction(time);
 
 int main(int argc, char** argv) {
   // Print output to stderr (while still logging).
-  cudaProfilerStart();
+//  cudaProfilerStart();
   FLAGS_alsologtostderr = 1;
   // Set version
   gflags::SetVersionString(AS_STRING(CAFFE_VERSION));
@@ -459,5 +459,5 @@ int main(int argc, char** argv) {
   } else {
     gflags::ShowUsageWithFlagsRestrict(argv[0], "tools/caffe");
   }
-  cudaProfilerStop();
+ // cudaProfilerStop();
 }
