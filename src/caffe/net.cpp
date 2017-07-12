@@ -121,6 +121,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     layers_[layer_id]->SetUp(bottom_vecs_[layer_id], top_vecs_[layer_id]);
     LOG_IF(INFO, Caffe::root_solver())
         << "Setting up " << layer_names_[layer_id];
+    int top_memory;
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
       if (blob_loss_weights_.size() <= top_id_vecs_[layer_id][top_id]) {
         blob_loss_weights_.resize(top_id_vecs_[layer_id][top_id] + 1, Dtype(0));
@@ -132,7 +133,10 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
         LOG_IF(INFO, Caffe::root_solver())
             << "    with loss weight " << layer->loss(top_id);
       }
-      memory_used_ += top_vecs_[layer_id][top_id]->count();
+      top_memory = top_vecs_[layer_id][top_id]->count();
+      memory_used_ += top_memory;
+      LOG_IF(INFO, Caffe::root_solver())
+          << "Memory required for top id: " << top_id << " " << top_memory * sizeof(Dtype);
     }
     LOG_IF(INFO, Caffe::root_solver())
         << "Memory required for data: " << memory_used_ * sizeof(Dtype);
