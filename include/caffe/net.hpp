@@ -85,8 +85,12 @@ class Net {
 
   Dtype ForwardBackward() {
     Dtype loss;
+    forward_timer_.Start();
     Forward(&loss);
+    forward_time_ += forward_timer_.MicroSeconds();
+    backward_timer_.Start();
     Backward();
+    backward_time_ += backward_timer_.MicroSeconds();
     return loss;
   }
 
@@ -253,6 +257,12 @@ class Net {
     after_backward_.push_back(value);
   }
 
+  std::vector<double> forward_time_per_layer_;
+  std::vector<double> backward_time_per_layer_;
+  
+  double forward_time_; 
+  double backward_time_;
+
  protected:
   // Helpers for Init.
   /// @brief Append a new top blob to the net.
@@ -336,6 +346,12 @@ class Net {
   vector<Callback*> after_forward_;
   vector<Callback*> before_backward_;
   vector<Callback*> after_backward_;
+
+  // timer
+  Timer forward_timer_;
+  Timer backward_timer_;
+  Timer timer_;
+  
 
 DISABLE_COPY_AND_ASSIGN(Net);
 };

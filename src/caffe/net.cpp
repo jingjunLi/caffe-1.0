@@ -59,6 +59,8 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   map<string, int> blob_name_to_idx;
   set<string> available_blobs;
   memory_used_ = 0;
+  forward_time_ = 0.0;
+  backward_time_ = 0.0;
   // For each layer, set up its input and output
   bottom_vecs_.resize(param.layer_size());
   top_vecs_.resize(param.layer_size());
@@ -66,6 +68,9 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   param_id_vecs_.resize(param.layer_size());
   top_id_vecs_.resize(param.layer_size());
   bottom_need_backward_.resize(param.layer_size());
+  forward_time_per_layer_.resize(param.layer_size(), 0.0);
+  backward_time_per_layer_.resize(param.layer_size(), 0.0);
+
   for (int layer_id = 0; layer_id < param.layer_size(); ++layer_id) {
     // Inherit phase from net if unset.
     if (!param.layer(layer_id).has_phase()) {
@@ -517,9 +522,10 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
   CHECK_GE(start, 0);
   CHECK_LT(end, layers_.size());
   Dtype loss = 0;
-  Timer layer_timer;
+
   //Timer layer_timer[end - start]
   for (int i = start; i <= end; ++i) {
+    timer_.Start();
     for (int c = 0; c < before_forward_.size(); ++c) {
       before_forward_[c]->run(i);
     }
@@ -533,6 +539,7 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
     for (int c = 0; c < after_forward_.size(); ++c) {
       after_forward_[c]->run(i);
     }
+    forward_time_per_layer_[i] += timer_.MicroSeconds();
   }
   return loss;
 }
@@ -574,6 +581,7 @@ void Net<Dtype>::BackwardFromTo(int start, int end) {
   CHECK_GE(end, 0);
   CHECK_LT(start, layers_.size());
   for (int i = start; i >= end; --i) {
+    timer_.Start();
     for (int c = 0; c < before_backward_.size(); ++c) {
       before_backward_[c]->run(i);
     }
@@ -585,6 +593,7 @@ void Net<Dtype>::BackwardFromTo(int start, int end) {
     for (int c = 0; c < after_backward_.size(); ++c) {
       after_backward_[c]->run(i);
     }
+    backward_time_per_layer_[i] += timer_.MicroSeconds();
   }
 }
 

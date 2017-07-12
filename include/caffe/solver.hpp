@@ -127,6 +127,8 @@ class Solver {
 
   // Timing information, handy to tune e.g. nbr of GPUs
   Timer iteration_timer_;
+  Timer total_timer_;
+  double total_time_;
   float iterations_last_;
 
   DISABLE_COPY_AND_ASSIGN(Solver);

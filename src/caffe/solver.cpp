@@ -44,6 +44,7 @@ void Solver<Dtype>::Init(const SolverParameter& param) {
   LOG_IF(INFO, Caffe::root_solver()) << "Initializing solver from parameters: "
     << std::endl << param.DebugString();
   param_ = param;
+  total_time_ = 0.0;
   CHECK_GE(param_.average_loss(), 1) << "average_loss should be non-negative.";
   CheckSnapshotWritePermissions();
   if (param_.random_seed() >= 0) {
@@ -218,7 +219,6 @@ void Solver<Dtype>::Step(int iters) {
       LOG_IF(INFO, Caffe::root_solver()) << "Iteration " << iter_
           << " (" << per_s << " iter/s, " << lapse << "s/"
           << param_.display() << " iters), loss = " << smoothed_loss_;
-      iteration_timer_.Start();
       iterations_last_ = iter_;
       const vector<Blob<Dtype>*>& result = net_->output_blobs();
       int score_index = 0;
@@ -239,6 +239,7 @@ void Solver<Dtype>::Step(int iters) {
               << result_vec[k] << loss_msg_stream.str();
         }
       }
+      iteration_timer_.Start();
     }
     for (int i = 0; i < callbacks_.size(); ++i) {
       callbacks_[i]->on_gradients_ready();
@@ -283,7 +284,10 @@ void Solver<Dtype>::Solve(const char* resume_file) {
   // For a network that is trained by the solver, no bottom or top vecs
   // should be given, and we will just provide dummy vecs.
   int start_iter = iter_;
-  Step(param_.max_iter() - iter_);
+  int total_iter = param_.max_iter() - iter_;
+  total_timer_.Start();
+  Step(total_iter);
+  total_time_ = total_timer_.MilliSeconds();
   // If we haven't already, save a snapshot after optimization, unless
   // overridden by setting snapshot_after_train := false
   if (param_.snapshot_after_train()
@@ -312,6 +316,26 @@ void Solver<Dtype>::Solve(const char* resume_file) {
   if (param_.test_interval() && iter_ % param_.test_interval() == 0) {
     TestAll();
   }
+  LOG(INFO) << "*** Layer time begins ***";
+  const vector<shared_ptr<Layer<Dtype> > >& layers = net_->layers();
+
+  for (int i = 0; i < layers.size(); ++i) {
+      const caffe::string& layername = layers[i]->layer_param().name();
+      LOG(INFO) << std::setfill(' ') << std::setw(10) << layername <<
+                "\tforward: " << net_->forward_time_per_layer_[i] / 1000 /
+                total_iter << " ms.";
+      LOG(INFO) << std::setfill(' ') << std::setw(10) << layername  <<
+                "\tbackward: " << net_->backward_time_per_layer_[i] / 1000 /
+                total_iter << " ms.";
+  }
+  LOG(INFO) << "Average Forward pass: " << net_->forward_time_ / 1000 /
+          total_iter << " ms.";
+  LOG(INFO) << "Average Backward pass: " << net_->backward_time_ / 1000 /
+          total_iter << " ms.";
+ //LOG(INFO) << "Average Forward-Backward: " << total_timer.MilliSeconds() /
+ //       FLAGS_iterations << " ms.";
+  LOG(INFO) << "Total Time: " << total_time_ << " ms.";
+  LOG(INFO) << "*** Layer ends ***";
   LOG(INFO) << "Optimization Done.";
 }
 
