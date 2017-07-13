@@ -164,12 +164,24 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     // Initialize and fill the weights:
     // output channels x input channels per-group x kernel height x kernel width
     this->blobs_[0].reset(new Blob<Dtype>(weight_shape));
+    float weights_memory = this->blobs_[0]->count() * sizeof(Dtype);
+      if(weights_memory > 1048576) {
+        LOG_IF(INFO, Caffe::root_solver())
+            << "Memory required for weights: " <<  weights_memory/1048576 << "MB" ;
+      } else if (weights_memory > 1024) {
+        LOG_IF(INFO, Caffe::root_solver())
+            << "Memory required for weights: " <<  weights_memory/1024 << "KB" ;
+      } else{
+        LOG_IF(INFO, Caffe::root_solver())
+            << "Memory required for weights: " << weights_memory << "bytes" ;
+      }
     shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(
         this->layer_param_.convolution_param().weight_filler()));
     weight_filler->Fill(this->blobs_[0].get());
     // If necessary, initialize and fill the biases.
     if (bias_term_) {
       this->blobs_[1].reset(new Blob<Dtype>(bias_shape));
+      LOG(INFO) << "Memory required for bias :" << this->blobs_[1]->count() * sizeof(Dtype) << "bytes";
       shared_ptr<Filler<Dtype> > bias_filler(GetFiller<Dtype>(
           this->layer_param_.convolution_param().bias_filler()));
       bias_filler->Fill(this->blobs_[1].get());
