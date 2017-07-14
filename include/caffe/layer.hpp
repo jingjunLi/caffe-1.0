@@ -291,6 +291,10 @@ class Layer {
     param_propagate_down_[param_id] = value;
   }
 
+  double prefetch_time_;
+  double read_time_;
+  double transform_time_;
+  int times;
 
  protected:
   /** The protobuf that stores the layer parameters */

@@ -316,8 +316,15 @@ void Solver<Dtype>::Solve(const char* resume_file) {
   if (param_.test_interval() && iter_ % param_.test_interval() == 0) {
     TestAll();
   }
-  LOG(INFO) << "*** Layer time begins ***";
   const vector<shared_ptr<Layer<Dtype> > >& layers = net_->layers();
+  LOG(INFO) << "*** Transform time begins ***";
+  int utime = layers[0]->times * 1000;
+  LOG(INFO) << "Prefetch batch: " << layers[0]->prefetch_time_ / utime << " ms.";
+  LOG(INFO) << "     Read time: " << layers[0]->read_time_ / utime << " ms.";
+  LOG(INFO) << "Transform time: " << layers[0]->transform_time_ / utime << " ms.";
+  LOG(INFO) << "*** Transform ends ***";
+
+  LOG(INFO) << "*** Layer time begins ***";
 
   for (int i = 0; i < layers.size(); ++i) {
       const caffe::string& layername = layers[i]->layer_param().name();
