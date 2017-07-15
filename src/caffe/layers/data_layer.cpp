@@ -101,7 +101,7 @@ void DataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
       Next();
     }
     datum.ParseFromString(cursor_->value());
-    //read_time += timer.MicroSeconds();
+    read_time += timer.MicroSeconds();
     this->read_time_ += timer.MicroSeconds();
 
     if (item_id == 0) {
@@ -126,15 +126,16 @@ void DataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
       Dtype* top_label = batch->label_.mutable_cpu_data();
       top_label[item_id] = datum.label();
     }
+    trans_time += timer.MicroSeconds();
     this->transform_time_ += timer.MicroSeconds();
     Next();
   }
   timer.Stop();
   batch_timer.Stop();
   this->prefetch_time_ += batch_timer.MicroSeconds();
-  //LOG(INFO) << "Prefetch batch: " << prefetch_time_ << " ms.";
-  //LOG(INFO) << "     Read time: " << read_time_ << " ms.";
-  //LOG(INFO) << "Transform time: " << transform_time_ << " ms.";
+  LOG(INFO) << "Prefetch batch: " << batch_timer.MilliSeconds() << " ms.";
+  LOG(INFO) << "     Read time: " << read_time / 1000 << " ms.";
+  LOG(INFO) << "Transform time: " << trans_time / 1000  << " ms.";
 }
 
 INSTANTIATE_CLASS(DataLayer);
