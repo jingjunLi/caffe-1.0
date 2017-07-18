@@ -128,6 +128,8 @@ class Solver {
   // Timing information, handy to tune e.g. nbr of GPUs
   Timer iteration_timer_;
   Timer total_timer_;
+  Timer update_timer_;
+  double update_time_;
   double total_time_;
   float iterations_last_;
 

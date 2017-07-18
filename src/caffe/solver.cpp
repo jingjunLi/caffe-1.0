@@ -212,6 +212,7 @@ void Solver<Dtype>::Step(int iters) {
     }
     loss /= param_.iter_size();
     // average the loss across iterations for smoothed reporting
+    update_timer_.Start();
     UpdateSmoothedLoss(loss, start_iter, average_loss);
     if (display) {
       float lapse = iteration_timer_.Seconds();
@@ -245,6 +246,7 @@ void Solver<Dtype>::Step(int iters) {
       callbacks_[i]->on_gradients_ready();
     }
     ApplyUpdate();
+    update_time_ += update_timer_.MicroSeconds();
 
     // Increment the internal iter_ counter -- its value should always indicate
     // the number of times the weights have been updated.
@@ -339,9 +341,11 @@ void Solver<Dtype>::Solve(const char* resume_file) {
           total_iter << " ms.";
   LOG(INFO) << "Average Backward pass: " << net_->backward_time_ / 1000 /
           total_iter << " ms.";
+  LOG(INFO) << "Average Update pass: " << update_time_ / 1000 /
+          total_iter << " ms.";
  //LOG(INFO) << "Average Forward-Backward: " << total_timer.MilliSeconds() /
  //       FLAGS_iterations << " ms.";
-  LOG(INFO) << "Total Time: " << total_time_ << " ms.";
+  LOG(INFO) << "Average ForwardBackward Time: " << total_time_ / total_iter << " ms.";
   LOG(INFO) << "*** Layer ends ***";
   LOG(INFO) << "Optimization Done.";
 }
