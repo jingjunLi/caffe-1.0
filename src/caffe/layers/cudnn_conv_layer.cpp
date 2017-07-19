@@ -188,9 +188,21 @@ void CuDNNConvolutionLayer<Dtype>::Reshape(
   // ensure all groups have enough workspace
   size_t total_max_workspace = max_workspace *
                                (this->group_ * CUDNN_STREAMS_PER_GROUP);
-
+ 
+    LOG(INFO) << "Reallocating workspace storage: " << total_max_workspace;
+    LOG(INFO) << "Reallocating workspace storage: " << workspaceSizeInBytes;
   // this is the total amount of storage needed over all groups + streams
   if (total_max_workspace > workspaceSizeInBytes) {
+     if(total_max_workspace > 1048576) {
+  	    LOG_IF(INFO, Caffe::root_solver())
+		    << "Total max workspace : " << total_max_workspace / 1048576 << "MB" ;
+     } else if (total_max_workspace > 1024) {
+        LOG_IF(INFO, Caffe::root_solver())
+    	    << "Total max workspace : " << total_max_workspace / 1024 <<  "KB" ;
+     } else{
+        LOG_IF(INFO, Caffe::root_solver())
+            << "Total max workspace : " << total_max_workspace <<  "bytes" ;
+     }  
     DLOG(INFO) << "Reallocating workspace storage: " << total_max_workspace;
     workspaceSizeInBytes = total_max_workspace;
 

@@ -48,6 +48,17 @@ void CuDNNLCNLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     // allocate new buffers
     CUDA_CHECK(cudaMalloc(&tempData1, totalSizeInBytes));
     CUDA_CHECK(cudaMalloc(&tempData2, totalSizeInBytes));
+
+    if( 2 * totalSizeInBytes > 1048576) {
+  	    LOG_IF(INFO, Caffe::root_solver())
+		    << "TempData in cudnn lcn layer " << 2 * totalSizeInBytes / 1048576 << "MB" ;
+    } else if (totalSizeInBytes > 1024) {
+        LOG_IF(INFO, Caffe::root_solver())
+    	    << "TempData in cudnn lcn layer : " << 2 *  totalSizeInBytes / 1024 <<  "KB" ;
+    } else{
+        LOG_IF(INFO, Caffe::root_solver())
+            << "TempData in cudnn lcn layer : " << 2 * totalSizeInBytes <<  "bytes" ;
+    }  
   }
 }
 
